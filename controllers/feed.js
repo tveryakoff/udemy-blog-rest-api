@@ -90,9 +90,37 @@ const updatePost = async (req, res, next) => {
   }
 }
 
+const deletePost = async (req, res, next) => {
+  const postId = req.params.postId
+  try {
+    const post = await Post.findById(postId)
+    if (!post) {
+      const e = new Error(`Post doesn't exist`)
+      e.statusCode = 404
+      throw e
+    }
+    deleteImage(post.imageUrl)
+    return res.status(200).json({
+      message: 'deleted'
+    })
+
+  }
+  catch (e) {
+    next(e)
+  }
+
+}
+
+const deleteImage = async (imageUrl) => {
+  try {
+    await fs.unlink(path.join(process.cwd(), 'public', 'images', imageUrl))
+  } catch (e) {console.error(e)}
+}
+
 module.exports = {
   getPosts,
   getPostById,
   createPost,
-  updatePost
+  updatePost,
+  deletePost
 }

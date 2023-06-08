@@ -16,5 +16,5 @@ router.post(
   feedController.createPost
 )
 router.put('/posts/:postId',multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
-
+router.delete('/posts/:postId', feedController.deletePost)
 module.exports = router
