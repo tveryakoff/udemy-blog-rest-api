@@ -5,16 +5,18 @@ const {publicImagesPath} = require("../constants/publicImages");
 const {storage, fileImageFilter} = require('../services/FileStorege')
 const multer = require('multer')
 
-
 const router  = express.Router()
 
-router.get('/posts', feedController.getPosts);
-router.get('/posts/:postId', feedController.getPostById)
-router.post(
-  '/posts',
-  multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
-  feedController.createPost
-)
-router.put('/posts/:postId',multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
-router.delete('/posts/:postId', feedController.deletePost)
+router.param('postId', feedController.fetchPost)
+
+router.route('/posts')
+  .get(feedController.getPosts)
+  .post(multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
+    feedController.createPost)
+
+router.route('/posts/:postId')
+  .get(feedController.getPostById)
+  .put(multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
+  .delete(feedController.deletePost)
+
 module.exports = router

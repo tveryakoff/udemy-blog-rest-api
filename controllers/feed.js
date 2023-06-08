@@ -3,6 +3,23 @@ const {Post} = require("../models/post");
 const path = require("path");
 const {publicImagesPath} = require("../constants/publicImages");
 const fs = require('fs/promises')
+
+const fetchPost = async (req, res, next) => {
+  const postId = req.params.postId
+  try {
+    const post = await Post.findById(postId)
+    if (!post) {
+      const e = new Error('Post not found')
+      e.statusCode = 404
+      throw e
+    }
+    req.post = post
+    next()
+  } catch (e) {
+    next(e)
+  }
+}
+
 const getPosts = async (req, res, next) => {
   try {
     let posts = await Post.find({}).exec()
@@ -13,14 +30,8 @@ const getPosts = async (req, res, next) => {
 }
 
 const getPostById = async (req, res, next) => {
-  const postId = req.params.postId
   try {
-    const post = await Post.findById(postId)
-    if (!post) {
-      const e = new Error('Post not found')
-      e.statusCode = 404
-      throw e
-    }
+    const post =  req.post
 
     return res.status(200).json({
       post
@@ -66,7 +77,7 @@ const updatePost = async (req, res, next) => {
   }
   const imageUrl = req.file?.filename
   try {
-    const post = await Post.findById(req.params?.postId)
+    const post = req.post
     if (!post) {
       const e = new Error('Post not found')
       e.statusCode = 404
@@ -91,22 +102,16 @@ const updatePost = async (req, res, next) => {
 }
 
 const deletePost = async (req, res, next) => {
-  const postId = req.params.postId
+  const post = req.post
   try {
-    const post = await Post.findById(postId)
-    if (!post) {
-      const e = new Error(`Post doesn't exist`)
-      e.statusCode = 404
-      throw e
-    }
-    deleteImage(post.imageUrl)
+    await deleteImage(post.imageUrl)
+    await Post.findByIdAndRemove(post._id)
     return res.status(200).json({
       message: 'deleted'
     })
-
   }
   catch (e) {
-    next(e)
+      next(e)
   }
 
 }
@@ -118,6 +123,7 @@ const deleteImage = async (imageUrl) => {
 }
 
 module.exports = {
+  fetchPost,
   getPosts,
   getPostById,
   createPost,
