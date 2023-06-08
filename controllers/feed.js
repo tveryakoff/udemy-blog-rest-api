@@ -1,5 +1,7 @@
 const {validationResult} = require("express-validator");
 const {Post} = require("../models/post");
+const path = require("path");
+const publicImagesPath = require("../constants/publicImages");
 const getPosts = async (req, res, next) => {
   try {
     let posts = await Post.find({}).exec()
@@ -35,7 +37,7 @@ const createPost = async (req, res, next) => {
     throw error
   }
   const {title, content} = req.body
-  const post = new Post({title, content, creator: {name: 'Dima'}, imageUrl: 'test.png'})
+  const post = new Post({title, content, creator: {name: 'Dima'}, imageUrl: req?.file?.filename})
   try {
     await post.save()
     return res.status(201).json({
