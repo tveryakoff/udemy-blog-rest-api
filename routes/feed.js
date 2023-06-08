@@ -15,5 +15,6 @@ router.post(
   multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
   feedController.createPost
 )
+router.put('/posts/:postId',multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
 
 module.exports = router

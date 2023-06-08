@@ -1,7 +1,8 @@
 const {validationResult} = require("express-validator");
 const {Post} = require("../models/post");
 const path = require("path");
-const publicImagesPath = require("../constants/publicImages");
+const {publicImagesPath} = require("../constants/publicImages");
+const fs = require('fs/promises')
 const getPosts = async (req, res, next) => {
   try {
     let posts = await Post.find({}).exec()
@@ -56,8 +57,42 @@ const createPost = async (req, res, next) => {
   }
 }
 
+const updatePost = async (req, res, next) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    const error = new Error(errors.toString())
+    error.statusCode = 422
+    throw error
+  }
+  const imageUrl = req.file?.filename
+  try {
+    const post = await Post.findById(req.params?.postId)
+    if (!post) {
+      const e = new Error('Post not found')
+      e.statusCode = 404
+      throw e
+    }
+    if (imageUrl && post.imageUrl) {
+      const oldUrl = post.imageUrl
+      await fs.unlink(path.join(process.cwd(), 'public', 'images', oldUrl))
+      post.imageUrl = imageUrl
+    }
+
+    post.title = req.body.title
+    post.description = req.body.description
+
+    await post.save()
+
+    return res.status(200).json({post})
+  }
+  catch (e) {
+    next(e)
+  }
+}
+
 module.exports = {
   getPosts,
   getPostById,
-  createPost
+  createPost,
+  updatePost
 }
