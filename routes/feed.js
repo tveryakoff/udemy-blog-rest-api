@@ -4,13 +4,14 @@ const {createPostValidators} = require("../validators/feed");
 const {publicImagesPath} = require("../constants/publicImages");
 const {storage, fileImageFilter} = require('../services/FileStorege')
 const multer = require('multer')
+const isAuthorized = require("../middlewares/isAuthorized");
 
 const router  = express.Router()
 
 router.param('postId', feedController.fetchPost)
 
 router.route('/posts')
-  .get(feedController.getPosts)
+  .get(isAuthorized, feedController.getPosts)
   .post(multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
     feedController.createPost)
 
