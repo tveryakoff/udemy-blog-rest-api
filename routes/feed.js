@@ -12,12 +12,12 @@ router.param('postId', feedController.fetchPost)
 
 router.route('/posts')
   .get(isAuthorized, feedController.getPosts)
-  .post(multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
+  .post(isAuthorized, multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'),
     feedController.createPost)
 
 router.route('/posts/:postId')
-  .get(feedController.getPostById)
-  .put(multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
-  .delete(feedController.deletePost)
+  .get(isAuthorized, feedController.getPostById)
+  .put(isAuthorized, multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
+  .delete(isAuthorized, feedController.deletePost)
 
 module.exports = router

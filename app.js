@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth')
 const {connectMongoDb} = require("./db");
 const path = require("path");
 const errorMiddleware = require("./middlewares/errorMiddleware");
+const isAuthorized = require("./middlewares/isAuthorized");
 
 const app = express()
 
