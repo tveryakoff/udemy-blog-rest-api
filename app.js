@@ -1,11 +1,16 @@
 const express = require('express')
 const bodyparser = require('body-parser')
 const feedRoutes = require('./routes/feed')
+const {connectMongoDb} = require("./db");
+const path = require("path");
+const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express()
 
 // app.use(bodyparser.urlencoded()) // x-www-form-url-encoded format
 app.use(bodyparser.json()) // application/json
+app.use(express.static(path.join(__dirname, 'public')) )
+app.use(errorMiddleware)
 
 // CORS
 app.use((req, res, next) => {
@@ -18,4 +23,5 @@ app.use((req, res, next) => {
 app.use('/feed', feedRoutes)
 
 
-app.listen(8080);
+connectMongoDb().then(app.listen(8080))
+
