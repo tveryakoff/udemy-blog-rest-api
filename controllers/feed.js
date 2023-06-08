@@ -22,8 +22,11 @@ const fetchPost = async (req, res, next) => {
 
 const getPosts = async (req, res, next) => {
   try {
-    let posts = await Post.find({}).exec()
-    return res.status(200).json({posts})
+    let totalItems = await Post.find({}).countDocuments()
+    const currentPage = req.query.page || 1
+    const perPage = 2
+    const posts = await Post.find().skip((currentPage - 1) * perPage).limit(perPage)
+    return res.status(200).json({posts, totalItems})
   } catch (e) {
     next(e)
   }
