@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyparser = require('body-parser')
 const feedRoutes = require('./routes/feed')
+const authRoutes = require('./routes/auth')
 const {connectMongoDb} = require("./db");
 const path = require("path");
 const errorMiddleware = require("./middlewares/errorMiddleware");
@@ -21,6 +22,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/feed', feedRoutes)
+app.use('/auth', authRoutes)
 
 
 connectMongoDb().then(app.listen(8080))
