@@ -125,6 +125,9 @@ const deletePost = async (req, res, next) => {
 
     await deleteImage(post.imageUrl)
     await Post.findByIdAndRemove(post._id)
+    const user = await User.findById(req.userId)
+    await user.posts.pull(post._id)
+    await user.save()
     return res.status(200).json({
       message: 'deleted'
     })
