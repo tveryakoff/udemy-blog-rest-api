@@ -27,7 +27,7 @@ const getPosts = async (req, res, next) => {
     let totalItems = await Post.find({}).countDocuments()
     const currentPage = req.query.page || 1
     const perPage = 2
-    const posts = await Post.find().skip((currentPage - 1) * perPage).limit(perPage).populate('creator')
+    const posts = await Post.find().skip((currentPage - 1) * perPage).limit(perPage).populate('creator').sort(({createdAt: -1}))
     return res.status(200).json({posts, totalItems})
   } catch (e) {
     next(e)
@@ -119,7 +119,7 @@ const updatePost = async (req, res, next) => {
 const deletePost = async (req, res, next) => {
   const post = req.post
   try {
-    if (post.creator.toString() !== req.userId) {
+    if (post.creator._id.toString() !== req.userId) {
       const e = new Error('Deleting not allowed')
       e.statusCode = 403
       throw e
@@ -130,6 +130,7 @@ const deletePost = async (req, res, next) => {
     const user = await User.findById(req.userId)
     await user.posts.pull(post._id)
     await user.save()
+    io.getIo().emit('posts', {action: 'delete', post: req.post._id.toString()})
     return res.status(200).json({
       message: 'deleted'
     })
