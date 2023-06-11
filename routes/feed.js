@@ -20,4 +20,5 @@ router.route('/posts/:postId')
   .put(isAuthorized, multer({storage: storage(publicImagesPath), fileFilter: fileImageFilter}).single('image'), feedController.updatePost)
   .delete(isAuthorized, feedController.deletePost)
 
+
 module.exports = router

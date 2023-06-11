@@ -3,6 +3,7 @@ const {body} = require('express-validator')
 const {User} = require('../models/user')
 const authController = require('../controllers/auth')
 const validateForm = require("../middlewares/validateForm");
+const isAuthorized = require("../middlewares/isAuthorized");
 
 const router = express.Router()
 
@@ -23,5 +24,9 @@ router.put('/signup', [
 )
 
 router.post('/login', authController.login)
+
+router.route('/status')
+  .get(isAuthorized, authController.getUserStatus)
+  .put(isAuthorized, authController.updateUserStatus)
 
 module.exports = router

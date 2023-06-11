@@ -42,7 +42,40 @@ const login = async (req, res, next) => {
   }
 }
 
+const getUserStatus = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId)
+    if (!user) {
+      const e = new Error('Not authorized')
+      e.statusCode = 401
+      throw e
+    }
+    return res.status(200).json({status: user.status})
+  } catch (e) {
+    next(e)
+  }
+}
+
+const updateUserStatus = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId)
+    if (!user) {
+      const e = new Error('Not authorized')
+      e.statusCode = 401
+      throw e
+    }
+    const {status} = req.body
+    user.status = status
+    await user.save()
+    return res.status(200).json({message: 'success'})
+  } catch (e) {
+    next(e)
+  }
+}
+
 module.exports = {
   login,
-  signUp
+  signUp,
+  getUserStatus,
+  updateUserStatus,
 }
