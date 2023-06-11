@@ -6,8 +6,7 @@ const {connectMongoDb} = require("./db");
 const path = require("path");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 const isAuthorized = require("./middlewares/isAuthorized");
-const {Server} = require('socket.io')
-
+const socketService = require('./services/io')
 const app = express()
 
 // app.use(bodyparser.urlencoded()) // x-www-form-url-encoded format
@@ -29,14 +28,10 @@ app.use('/auth', authRoutes)
 
 connectMongoDb().then(()=> {
   const server = app.listen(8080)
-  const io = new Server(server,{cors: {
-      origin: ["http://localhost:8080", 'http://localhost:3000'],
-      methods: ["GET", "POST"]
-    }})
+  const io = socketService.init(server)
   io.on('connection', () => {
-    console.log('connected socket')
+    console.log('connected')
   })
-
   }
 )
 

@@ -4,11 +4,12 @@ const path = require("path");
 const {publicImagesPath} = require("../constants/publicImages");
 const fs = require('fs/promises')
 const {User} = require("../models/user");
+const io = require('../services/io')
 
 const fetchPost = async (req, res, next) => {
   const postId = req.params.postId
   try {
-    const post = await Post.findById(postId)
+    const post = await Post.findById(postId).populate('creator')
     if (!post) {
       const e = new Error('Post not found')
       e.statusCode = 404
@@ -26,7 +27,7 @@ const getPosts = async (req, res, next) => {
     let totalItems = await Post.find({}).countDocuments()
     const currentPage = req.query.page || 1
     const perPage = 2
-    const posts = await Post.find().skip((currentPage - 1) * perPage).limit(perPage)
+    const posts = await Post.find().skip((currentPage - 1) * perPage).limit(perPage).populate('creator')
     return res.status(200).json({posts, totalItems})
   } catch (e) {
     next(e)
@@ -62,6 +63,7 @@ const createPost = async (req, res, next) => {
     }
     user.posts.push(post)
     await user.save()
+    io.getIo().emit('posts', {action: 'create', post: {...post._doc, creator: {...user._doc}}})
     return res.status(201).json({
       message: 'created',
       post: {
@@ -87,7 +89,7 @@ const updatePost = async (req, res, next) => {
   const imageUrl = req.file?.filename
   try {
     const post = req.post
-    if (post.creator.toString() !== req.userId) {
+    if (post.creator._id.toString() !== req.userId) {
       const e = new Error('Deleting not allowed')
       e.statusCode = 403
       throw e
@@ -106,8 +108,8 @@ const updatePost = async (req, res, next) => {
     post.title = req.body.title
     post.description = req.body.description
 
-    await post.save()
-
+    const result = await post.save()
+    io.getIo().emit('posts', {action: 'update', post: result })
     return res.status(200).json({post})
   } catch (e) {
     next(e)
